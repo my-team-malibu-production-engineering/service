@@ -1,14 +1,11 @@
-
 # You can use this file to easily send requests to your API.
 # Prerequisite: humao.rest-client Vscode plugin (already present on codespace)
 # High-level overview of REST API concepts used here: https://www.packtpub.com/en-us/learning/how-to-tutorials/what-are-rest-verbs-and-status-codes-tutorial?srsltid=AfmBOoppDqtkhRxj5BLZONRZFzRDmh6eP-xyTo6H4OuEHYuVbrg1d4Dm
-
 
 # Requests for API endpoints of the sample project:
 
 ### Hello world endpoint: get response "Hello, Stranger!"
 GET http://localhost:8080/hello-world
-
 
 ### Hello world endpoint: get response "Hello!"### Get all products
 GET http://localhost:8080/api/products
@@ -29,8 +26,125 @@ Content-Type: application/json
   "brand": "NaturaSkin",
   "description": "Cremă hidratantă pentru toate tipurile de ten"
 }
+### Get product by ID
+# @prompt productId Introduceti ID-ul produsului
+GET http://localhost:8080/api/products/{{productId}}
 
 
+### Update product by ID
+# @prompt updateProductId Introduceti ID-ul produsului de actualizat
+PUT http://localhost:8080/api/products/{{updateProductId}}
+Content-Type: application/json
+
+{
+  "name": "Cremă hidratantă intensivă",
+  "price": 59.99,
+  "inStock": true,
+  "stockSize": 10,
+  "category": "Îngrijire ten",
+  "brand": "NaturaSkin",
+  "description": "Cremă hidratantă intensivă pentru ten uscat"
+}
+
+### ======== UTILIZATORI ========
+
+### Create a new user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "firstName": "Maria",
+  "lastName": "Popescu"
+}
+### Get user by ID
+# @prompt userId Introduceti ID-ul utilizatorului
+GET http://localhost:8080/api/users/{{userId}}
+
+### Delete user by ID
+# @prompt deleteUserId Introduceti ID-ul utilizatorului de sters
+DELETE http://localhost:8080/api/users/{{deleteUserId}}
+
+
+### Issue loyalty card to user
+# @prompt loyaltyUserId Introduceti ID-ul utilizatorului
+POST http://localhost:8080/api/users/{{loyaltyUserId}}/loyalty-cards
+Content-Type: application/json
+
+{
+  "cardType": "BRONZE"
+}
+
+### Get user's loyalty cards
+# @prompt userCardsId Introduceti ID-ul utilizatorului
+GET http://localhost:8080/api/users/{{userCardsId}}/loyalty-cards
+
+### Issue loyalty card directly
+# @prompt directUserId Introduceti ID-ul utilizatorului
+POST http://localhost:8080/api/loyalty-cards/user/{{directUserId}}
+Content-Type: application/json
+
+{
+  "cardType": "BRONZE"
+}
+
+
+### Get card by ID
+# @prompt cardId Introduceti ID-ul cardului
+GET http://localhost:8080/api/loyalty-cards/{{cardId}}
+
+### Get cards by user ID
+# @prompt userForCards Introduceti ID-ul utilizatorului
+GET http://localhost:8080/api/loyalty-cards/user/{{userForCards}}
+
+### Upgrade loyalty card
+# @prompt upgradeCardId Introduceti ID-ul cardului de upgradat
+PUT http://localhost:8080/api/loyalty-cards/{{upgradeCardId}}/upgrade
+Content-Type: application/json
+
+{
+  "newType": "GOLD"
+}
+
+### Add points to loyalty card
+# @prompt pointsCardId Introduceti ID-ul cardului
+POST http://localhost:8080/api/loyalty-cards/{{pointsCardId}}/points
+Content-Type: application/json
+
+{
+  "points": 100
+}
+
+### Calculate discount
+# @prompt discountCardId Introduceti ID-ul cardului
+# @prompt amount Introduceti suma pentru care se calculeaza discountul
+GET http://localhost:8080/api/loyalty-cards/{{discountCardId}}/discount?amount={{amount}
+
+### Delete loyalty card
+# @prompt deleteCardId Introduceti ID-ul cardului de sters
+DELETE http://localhost:8080/api/loyalty-cards/{{deleteCardId}}
+
+
+### ======== TRANZACȚII ========
+
+### Create a new transaction
+POST http://localhost:8080/api/transactions
+Content-Type: application/json
+
+{
+  "userId": "67d17af14b76ce7dca820d11",
+  "products": [
+    {
+      "productId": "9a358d54-c042-4321-be19-7d7805046d64",
+      "quantity": 2
+    },
+    {
+      "productId": "00d7d8c6-b8f6-455d-82e7-abc09fab7950",
+      "quantity": 1
+    }
+  ],
+  "loyaltyCardId": "67d17cbc4b76ce7dca820d12",
+  "useDiscount": true
+}
 
 ### Hello world with a request param passed.
 # When sending the request it will ask you for the name
@@ -71,6 +185,5 @@ Content-Type: application/json
 ### Delete greeting
 @deleteGreetingId = 1001
 DELETE http://localhost:8080/greetings/{{deleteGreetingId}}
-
 
 # TODO add requests for your own endpoints!
