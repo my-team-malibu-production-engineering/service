@@ -8,6 +8,8 @@
 GET http://localhost:8080/hello-world
 
 ### Hello world endpoint: get response "Hello!"### Get all products
+
+#===== PRODUSE =====#
 GET http://localhost:8080/api/products
 
 ### Initialize a product (create a test product)
@@ -18,13 +20,13 @@ POST http://localhost:8080/api/products
 Content-Type: application/json
 
 {
-  "name": "Cremă hidratantă",
-  "price": 49.99,
+  "name": "Ruj mat rezistent la transfer",
+  "price": 59.99,
   "inStock": true,
-  "stockSize": 15,
-  "category": "Îngrijire ten",
-  "brand": "NaturaSkin",
-  "description": "Cremă hidratantă pentru toate tipurile de ten"
+  "stockSize": 20,
+  "category": "Machiaj",
+  "brand": "GlamMakeup",
+  "description": "Ruj mat de lungă durată, rezistent la transfer"
 }
 ### Get product by ID
 # @prompt productId Introduceti ID-ul produsului
@@ -53,9 +55,11 @@ POST http://localhost:8080/api/users
 Content-Type: application/json
 
 {
-  "firstName": "Maria",
-  "lastName": "Popescu"
+  "firstName": "Alexandru",
+  "lastName": "Munteanu"
 }
+
+
 ### Get user by ID
 # @prompt userId Introduceti ID-ul utilizatorului
 GET http://localhost:8080/api/users/{{userId}}
@@ -71,7 +75,7 @@ POST http://localhost:8080/api/users/{{loyaltyUserId}}/loyalty-cards
 Content-Type: application/json
 
 {
-  "cardType": "BRONZE"
+  "cardType": "GOLD"
 }
 
 ### Get user's loyalty cards
@@ -131,20 +135,146 @@ POST http://localhost:8080/api/transactions
 Content-Type: application/json
 
 {
-  "userId": "67d17af14b76ce7dca820d11",
-  "products": [
+  "userId": "67d18d796dd2307c174f8f8a",
+  "productsList": [
     {
-      "productId": "9a358d54-c042-4321-be19-7d7805046d64",
-      "quantity": 2
-    },
-    {
-      "productId": "00d7d8c6-b8f6-455d-82e7-abc09fab7950",
-      "quantity": 1
+      "productId": "bbbee47b-9078-4168-ab37-b82e4dc453f0",
+      "productQuantity": 2
     }
   ],
-  "loyaltyCardId": "67d17cbc4b76ce7dca820d12",
+  "loyaltyCardId": "67d18db36dd2307c174f8f8c",
   "useDiscount": true
 }
+
+### 13. Tranzacție cu produse multiple
+
+POST http://localhost:8080/api/transactions
+Content-Type: application/json
+
+{
+  "userId": "67d1960a6dd2307c174f8f8f",
+  "productsList": [
+    {
+      "productId": "2daf8202-ca63-4fa2-9caa-1c70904fc30c",
+      "productQuantity": 2
+    },
+    {
+      "productId": "ea490288-8f38-480c-8927-04fd60df0ac4",
+      "productQuantity": 1
+    }
+  ],
+  "loyaltyCardId": "67d196c96dd2307c174f8f92",
+  "useDiscount": true
+}
+
+### 14. Tranzacție cu parfum (testare promoție procentuală)
+
+POST http://localhost:8080/api/transactions
+Content-Type: application/json
+
+{
+  "userId": "67d1961f6dd2307c174f8f90",
+  "productsList": [
+    {
+      "productId": "06936325-b7ac-474b-ae05-558c4cfaf357",
+      "productQuantity": 1
+    }
+  ],
+  "useDiscount": false
+}
+
+### 15. Tranzacție cu ruj (testare promoție sumă fixă)
+
+POST http://localhost:8080/api/transactions
+Content-Type: application/json
+
+{
+  "userId": "67d196316dd2307c174f8f91",
+  "productsList": [
+    {
+      "productId": "2daf8202-ca63-4fa2-9caa-1c70904fc30c",
+      "productQuantity": 1
+    }
+  ],
+  "useDiscount": false
+}
+
+### Get transaction by ID
+# @prompt transactionId Introduceti ID-ul tranzactiei
+GET http://localhost:8080/api/transactions/{{transactionId}}
+
+### Get all transactions
+GET http://localhost:8080/api/transactions
+
+### Get user transactions
+# @prompt userTransactionsId Introduceti ID-ul utilizatorului
+GET http://localhost:8080/api/transactions/user/{{userTransactionsId}}
+
+### Get transactions by date range
+# @prompt startDate Data de început (format: YYYY-MM-DDThh:mm:ss)
+# @prompt endDate Data de sfârșit (format: YYYY-MM-DDThh:mm:ss)
+GET http://localhost:8080/api/transactions/range?startDate={{startDate}}&endDate={{endDate}}
+
+### Delete transaction
+# @prompt cancelTransactionId Introduceti ID-ul tranzactiei de anulat
+DELETE http://localhost:8080/api/transactions/{{cancelTransactionId}}
+
+### Create a new promotion
+POST http://localhost:8080/api/promotions
+Content-Type: application/json
+
+{
+  "name": "20 RON Reducere Machiaj",
+  "description": "Reducere fixă de 20 RON la produsele de machiaj",
+  "type": "FIXED_AMOUNT_DISCOUNT",
+  "discountValue": 20,
+  "startDate": "2025-03-15T00:00:00",
+  "endDate": "2025-04-15T23:59:59",
+  "active": true,
+  "applicableCategories": ["Machiaj"]
+}
+
+### Get promotion by ID
+# @prompt promotionId Introduceti ID-ul promotiei
+GET http://localhost:8080/api/promotions/{{promotionId}}
+
+### Get all promotions
+GET http://localhost:8080/api/promotions
+
+### Get active promotions
+GET http://localhost:8080/api/promotions/active
+
+### Update promotion
+# @prompt updatePromotionId Introduceti ID-ul promotiei de actualizat
+PUT http://localhost:8080/api/promotions/{{updatePromotionId}}
+Content-Type: application/json
+
+{
+  "name": "Buy 2 Get 1 Free - Updated",
+  "description": "Cumpără 2 produse din categoria Îngrijire ten și primești 1 gratis",
+  "type": "BUY_X_GET_Y_FREE",
+  "buyQuantity": 2,
+  "freeQuantity": 1,
+  "discountValue": 0,
+  "startDate": "2025-03-01T00:00:00",
+  "endDate": "2025-05-01T23:59:59",
+  "active": true,
+  "applicableCategories": ["Îngrijire ten", "Îngrijire păr"]
+}
+
+### Activate promotion
+# @prompt activatePromotionId Introduceti ID-ul promotiei de activat
+PUT http://localhost:8080/api/promotions/{{activatePromotionId}}/activate
+
+### Deactivate promotion
+# @prompt deactivatePromotionId Introduceti ID-ul promotiei de dezactivat
+PUT http://localhost:8080/api/promotions/{{deactivatePromotionId}}/deactivate
+
+### Delete promotion
+# @prompt deletePromotionId Introduceti ID-ul promotiei de sters
+DELETE http://localhost:8080/api/promotions/{{deletePromotionId}}
+
+
 
 ### Hello world with a request param passed.
 # When sending the request it will ask you for the name
