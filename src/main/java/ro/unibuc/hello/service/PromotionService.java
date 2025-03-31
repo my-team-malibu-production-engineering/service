@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ro.unibuc.hello.data.promotions.PromotionEntity;
 import ro.unibuc.hello.data.promotions.PromotionRepository;
 
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
