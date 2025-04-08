@@ -28,7 +28,7 @@ pipeline {
         stage('Push image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker_password', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh "docker login -u ${DOCKER_PASSWORD_USR} -p ${DOCKER_PASSWORD_PSD}"
+                    sh "docker login -u ${DOCKER_PASSWORD_USR} -p ${DOCKER_PASSWORD_PSW}"
                     sh "docker push nicoletaiova25/hello-img:${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
                 }
             }
