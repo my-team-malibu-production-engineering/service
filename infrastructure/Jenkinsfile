@@ -33,7 +33,8 @@ pipeline {
                     sh "docker login -u ${DOCKER_PASSWORD_USR} -p ${DOCKER_PASSWORD_PSW}"
                     sh "docker push anamariacimpi/hello-img:${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
                     sh "git tag ${env.IMAGE_TAG}"
-                    sh "git push https://$GITHUB_TOKEN@github.com/${my-team-malibu-production-engineering}/service.git ${env.IMAGE_TAG}"
+                    def repoOwner = "my-team-malibu-production-engineering"
+                    sh "git push https://$GITHUB_TOKEN@github.com/${repoOwner}/service.git ${env.IMAGE_TAG}" 
                 }
             }
         }
