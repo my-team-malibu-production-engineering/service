@@ -15,6 +15,12 @@ pipeline {
             }
         }
         
+        stage('Integration Test') {
+            steps {
+                sh './gradlew testIT'
+            }
+        }
+        
         stage('Tag image') {
             steps {
                 script {
