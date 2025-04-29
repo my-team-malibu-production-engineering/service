@@ -56,6 +56,10 @@ dependencies {
 	testImplementation "io.cucumber:cucumber-java:$cucumberVersion"
 	testImplementation "io.cucumber:cucumber-junit:$cucumberVersion"
 	testImplementation "io.cucumber:cucumber-spring:$cucumberVersion"
+
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
 }
 
 dependencyManagement {

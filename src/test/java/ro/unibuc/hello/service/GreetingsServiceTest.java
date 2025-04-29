@@ -1,5 +1,6 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -25,7 +27,7 @@ class GreetingsServiceTest {
     private InformationRepository informationRepository;
 
     @InjectMocks
-    private GreetingsService greetingsService = new GreetingsService();
+    private GreetingsService greetingsService = new GreetingsService(new SimpleMeterRegistry());
 
     @BeforeEach
     void setUp() {
