@@ -1,0 +1,29 @@
+groups:
+  - name: ContainerAlerts
+    rules:
+    - alert: WARNING-TrafficInjectorContainersDown
+      expr: time() - container_last_seen{name="service_hello_1"} > 20
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: Injector container killed (instance {{ $labels.instance }})
+        description: "Application container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+    - alert: CRITICAL-CPUUsageHigh
+      expr: rate(container_cpu_usage_seconds_total[1m]) > 0.01
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: High CPU usage detected (instance {{ $labels.instance }})
+        description: "Container is using too much CPU (>90%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+    - alert: WARNING-MemoryUsageHigh
+      expr: container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.8
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: High Memory usage detected (instance {{ $labels.instance }})
+        description: "Container memory usage above 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
