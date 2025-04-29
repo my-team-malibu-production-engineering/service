@@ -4,7 +4,7 @@ services:
     ports:
       - 8080:8080
       # Port for debug
-      - 5005:5005
+      # 5005:5005
     environment:
       ENVIRONMENT_NAME: local
       MONGODB_CONECTION_URL: mongodb://root:example@mongo:27017/
@@ -12,7 +12,7 @@ services:
     profiles:
       - "hello-service"
   jenkins:
-    image: anamariacimpi/hello-img:${IMAGE_TAG}
+    image: anamariacimpi/hello-img:1.5.0
     ports:
       - 8082:8080
       - 50000:50000
