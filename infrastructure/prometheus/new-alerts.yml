@@ -1,0 +1,27 @@
+groups:
+  - name: NewAppAlerts
+    rules:
+    - alert: WARNING-ApplicationUnreachable
+      expr: up{job="spring-hello-app"} == 0
+      for: 30s
+      labels:
+        severity: warning
+      annotations:
+        summary: Spring application unreachable (instance {{ $labels.instance }})
+        description: "{{ $labels.instance }} is not responding to Prometheus scrapes.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+    - alert: WARNING-HighRequestLatency
+      expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job="spring-hello-app"}[5m])) by (le)) > 1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: High request latency (instance {{ $labels.instance }})
+        description: "{{ $labels.instance }} has 95th percentile request *Truncated* request latency > 1s for 1 minute.\n  VALUE = {{ $value }}\n  FLAG = true"
+    - alert: WARNING-HighErrorRate
+      expr: 100 * sum(rate(http_server_requests_total{job="spring-hello-app", status=~"5.."}[5m])) / sum(rate(http_server_requests_total{job="spring-hello-app"}[5m])) > 5
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: High error rate (instance {{ $labels.instance }})
+        description: "{{ $labels.instance }} has an error rate > 5% for 1 minute.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

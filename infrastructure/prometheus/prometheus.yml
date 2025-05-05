@@ -28,7 +28,7 @@ rule_files:
   - app-alerts.yml
   - canary-alerts.yml
   - container-alerts.yml
-  - malibu-alerts.yaml
+  - new-alerts.yml
 
 alerting:
   alertmanagers:
