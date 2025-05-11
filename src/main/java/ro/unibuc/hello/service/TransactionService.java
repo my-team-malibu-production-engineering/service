@@ -1,7 +1,10 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ro.unibuc.hello.data.product.ProductEntity;
 import ro.unibuc.hello.data.product.ProductRepository;
@@ -16,9 +19,13 @@ import ro.unibuc.hello.data.loyalty.LoyaltyCardRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TransactionService {
+    private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
+
     @Autowired
     private TransactionRepository transactionRepository;
     
@@ -36,7 +43,15 @@ public class TransactionService {
 
     @Autowired
     private PromotionRepository promotionRepository;
-    
+
+    private final Counter transactionsPerUserCounter;
+    private final Counter totalDiscountCounter;
+
+    public TransactionService(MeterRegistry registry) {
+        transactionsPerUserCounter = registry.counter("transactions.per.user");
+        totalDiscountCounter = registry.counter("discounts.total");
+    }
+
     public TransactionEntity createTransaction(TransactionDTO transaction) throws Exception {
         // Verifică dacă utilizatorul există
         userService.getUserById(transaction.getUserId());
@@ -110,6 +125,10 @@ public class TransactionService {
         transactionToSave.setTotalDiscount(promotionDiscount + loyaltyDiscount);
         transactionToSave.setFinalAmount(totalAmount - transactionToSave.getTotalDiscount());
         
+        // Înregistrează metrici
+        transactionsPerUserCounter.increment(); // Numără tranzacția
+        totalDiscountCounter.increment(transactionToSave.getTotalDiscount()); // Valoare discount
+        
         // Salvează tranzacția
         return transactionRepository.save(transactionToSave);
     }
@@ -122,18 +141,12 @@ public class TransactionService {
         
         for (PromotionEntity promotion : activePromotions) {
             if (promotion.getType() == PromotionEntity.PromotionType.BUY_X_GET_Y_FREE) {
-                // Aplică promoția "cumperi X, primești Y gratis"
                 for (String category : promotion.getApplicableCategories()) {
                     if (productsByCategory.containsKey(category)) {
                         List<ProductWithQuantity> products = productsByCategory.get(category);
-                        
-                        // Sortează produsele în funcție de preț (crescător)
                         products.sort(Comparator.comparingDouble(p -> p.getProduct().getPrice()));
-                        
                         int totalItems = products.size();
                         int setsCount = totalItems / (promotion.getBuyQuantity() + promotion.getFreeQuantity());
-                        
-                        // Aplică discount pentru produsele gratuite (cele mai ieftine)
                         for (int i = 0; i < setsCount * promotion.getFreeQuantity(); i++) {
                             int index = promotion.getBuyQuantity() * (i / promotion.getFreeQuantity() + 1) + i % promotion.getFreeQuantity();
                             if (index < totalItems) {
@@ -144,14 +157,11 @@ public class TransactionService {
                     }
                 }
             }
-            // Poți adăuga și alte tipuri de promoții aici
         }
         
         return totalDiscount;
     }
-    
-    // Restul metodelor
-    
+
     public TransactionEntity getTransactionById(String id) throws Exception {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new Exception(HttpStatus.NOT_FOUND.toString()));
@@ -162,7 +172,6 @@ public class TransactionService {
     }
     
     public List<TransactionEntity> getTransactionsByUser(String userId) throws Exception {
-        // Verifică dacă utilizatorul există
         userService.getUserById(userId);
         return transactionRepository.findByUserId(userId);
     }
@@ -175,36 +184,28 @@ public class TransactionService {
         TransactionEntity transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new Exception(HttpStatus.NOT_FOUND.toString()));
         
-        // Reintrodu produsele în stoc
         for (TransactionEntry entry : transaction.getProductsList()) {
             ProductEntity product = productRepository.findById(entry.getProductId())
                     .orElseThrow(() -> new Exception(HttpStatus.NOT_FOUND.toString()));
-            
             product.stockSize += entry.getProductQuantity();
             productRepository.save(product);
         }
         
-        // Dacă s-au adăugat puncte pe card, le scădem
         if (transaction.isUseDiscount() && transaction.getLoyaltyCardId() != null) {
             try {
                 LoyaltyCardEntity card = loyaltyCardRepository.findById(transaction.getLoyaltyCardId())
                         .orElseThrow(() -> new Exception(HttpStatus.NOT_FOUND.toString()));
-                
-                // Scade punctele (1 punct pentru fiecare 10 unități monetare)
                 int pointsToRemove = (int)(transaction.getFinalAmount() / 10);
                 card.setPoints(Math.max(0, card.getPoints() - pointsToRemove));
-                
                 loyaltyCardRepository.save(card);
             } catch (Exception e) {
-                // Dacă cardul nu mai există, continuă fără ajustarea punctelor
+                // Continuă dacă cardul nu există
             }
         }
         
-        // Șterge tranzacția
         transactionRepository.deleteById(id);
     }
     
-    // Clasă helper pentru procesarea promoțiilor
     private static class ProductWithQuantity {
         private ProductEntity product;
         private int quantity;
