@@ -19,8 +19,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    private Counter uniqueUserCounter;
-    private Counter totalUserCounter;
+    private final Counter uniqueUserCounter;
+    private final Counter totalUserCounter;
 
     public UserController(MeterRegistry registry) {
         uniqueUserCounter = registry.counter("users.unique");
@@ -32,10 +32,10 @@ public class UserController {
     public void postUser(@RequestBody UserDTO userDTO) {
         try {
             userService.saveUser(userDTO);
-            uniqueUserCounter.increment();
-            totalUserCounter.increment();
-        } catch (Exception E) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            uniqueUserCounter.increment(); // Incrementăm pentru utilizator unic
+            totalUserCounter.increment();  // Incrementăm pentru total utilizatori
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user");
         }
     }
 
@@ -46,9 +46,9 @@ public class UserController {
             return userService.getUserById(id);
         } catch (Exception e) {
             if (e.getMessage().equals(HttpStatus.NOT_FOUND.toString())) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
             } else {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Sorry it's not working");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Service not available");
             }
         }
     }
@@ -58,18 +58,16 @@ public class UserController {
     public void deleteUserById(@PathVariable String id) {
         try {
             userService.deleteUserById(id);
-            totalUserCounter.increment(-1);
+            totalUserCounter.increment(-1); // Scădem din total la ștergere
         } catch (Exception e) {
             if (e.getMessage().equals(HttpStatus.NOT_FOUND.toString())) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
             } else {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server on fire probably");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Service not available");
             }
         }
     }
-    
-    // Endpoint-uri noi pentru cardurile de fidelitate
-    
+
     @PostMapping("/api/users/{id}/loyalty-cards")
     @ResponseBody
     public LoyaltyCardEntity issueCardToUser(@PathVariable String id, 
@@ -87,7 +85,7 @@ public class UserController {
             }
         }
     }
-    
+
     @GetMapping("/api/users/{id}/loyalty-cards")
     @ResponseBody
     public List<LoyaltyCardEntity> getUserCards(@PathVariable String id) {
